@@ -57,16 +57,16 @@ namespace Mec.Bot.Dialogs
                 {
                     case "rogerio":
                     case "rogério":
-                        msgRetorno = msgRetorno + "xiiii.... o **Rogério** é conhecido por ser 4% kkkkkk\n";
+                        msgRetorno = msgRetorno + "xiiii.... o **Rogério** é conhecido por ser 4% kkkkkk \n";
                         break;
                     case "anderson":
-                        msgRetorno = msgRetorno + "eita o **Anderson** já tirou foto com a Bel Pesce!!!\n";
+                        msgRetorno = msgRetorno + "eita o **Anderson** já tirou foto com a Bel Pesce!!! \n";
                         break;
                     case "wellington":
-                        msgRetorno = msgRetorno + "cuidado porque o **Wellington** desta gente muito feliz hahahaha\n";
+                        msgRetorno = msgRetorno + "cuidado porque o **Wellington** desta gente muito feliz hahahaha \n";
                         break;
                     case "danilo":
-                        msgRetorno = msgRetorno + "vixe o **Danilo** sempre quer dois salgados....\n";
+                        msgRetorno = msgRetorno + "vixe o **Danilo** sempre quer dois salgados.... \n";
                         break;
                 }
             }
