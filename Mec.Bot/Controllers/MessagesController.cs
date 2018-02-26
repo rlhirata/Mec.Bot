@@ -36,7 +36,8 @@ namespace Mec.Bot
 
             if (activity.Type == ActivityTypes.Message)
             {
-                await Conversation.SendAsync(activity, () => new Dialogs.MecBotDialog(service));
+                //await Conversation.SendAsync(activity, () => new Dialogs.MecBotDialog(service));
+                await Conversation.SendAsync(activity, () => new Dialogs.CotacaoDialog(service));
             }
             else
             {
