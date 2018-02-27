@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.Serialization.Json;
 using System.Text;
@@ -10,11 +11,11 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Luis;
 using Microsoft.Bot.Builder.Luis.Models;
 using Microsoft.Bot.Connector;
+using Newtonsoft.Json;
 
 namespace Mec.Bot.Dialogs
 {
     [Serializable]
-    //[LuisModel("2be5435f-bf47-4059-a876-493962f6bae9", "111b1b9d42ce4ea09e84eb1ae9aa4f90")]
     public class CotacaoDialog : LuisDialog<object>
     {
         public CotacaoDialog(ILuisService service) : base(service) { }
@@ -40,49 +41,74 @@ namespace Mec.Bot.Dialogs
         [LuisIntent("Cotacao")]
         public async Task Cotação(IDialogContext context, LuisResult result)
         {
-            ///////////////////////////////////////////////////////////////////////////////////////////////////////
-            var client = new System.Net.Http.HttpClient();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            var urllink = "http://api.promasters.net.br/cotacao/v1/valores";
-            var response = await client.GetAsync(urllink);
-            var JsonResult = response.Content.ReadAsStringAsync().Result;
-            var js = new DataContractJsonSerializer(typeof(MoedaCotacao));
-            var ms = new MemoryStream(Encoding.UTF8.GetBytes(JsonResult));
-            var cotacao = (MoedaCotacao)js.ReadObject(ms);
-
-            var msgRetorno = new StringBuilder();
             var moedas = result.Entities?.Select(e => e.Entity);
+            var filtro = string.Join(",", moedas.ToArray());
+            var endpoint = $"http://api-cotacoes-maratona-bots.azurewebsites.net/api/Cotacoes/{filtro}";
 
-            foreach (string nomeMoeda in moedas)
+            await context.PostAsync("Aguarde um momento enquanto eu obtenho os valores...");
+
+            using (var client = new HttpClient())
             {
-                switch (nomeMoeda.ToLower())
+                var response = await client.GetAsync(endpoint);
+
+                if (!response.IsSuccessStatusCode)
                 {
-                    case "dolar":
-                    case "dólar":
-                    case "dollar":
-                        msgRetorno.AppendLine("A cotação do " + nomeMoeda + " é " + cotacao.valores.USD.valor.ToString("C") + " (" + cotacao.valores.USD.fonte + "). ");
-                        break;
-                    case "euro":
-                        msgRetorno.AppendLine("A cotação do " + nomeMoeda + " é " + cotacao.valores.EUR.valor.ToString("C") + " (" + cotacao.valores.EUR.fonte + "). ");
-                        break;
-                    case "bitcoin":
-                        msgRetorno.AppendLine("A cotação do " + nomeMoeda + " é " + cotacao.valores.BTC.valor.ToString("C") + " (" + cotacao.valores.BTC.fonte + "). ");
-                        break;
-                    case "libra":
-                        msgRetorno.AppendLine("A cotação do " + nomeMoeda + " é " + cotacao.valores.GBP.valor.ToString("C") + " (" + cotacao.valores.GBP.fonte + "). ");
-                        break;
-                    case "peso":
-                        msgRetorno.AppendLine("A cotação do " + nomeMoeda + " argentino é " + cotacao.valores.ARS.valor.ToString("C") + " (" + cotacao.valores.ARS.fonte + "). ");
-                        break;
+                    await context.PostAsync("Ocorreu algum erro... tente mais tarde!");
+                    return;
+                }
+                else
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    var resultado = JsonConvert.DeserializeObject<Models.Cotacao[]>(json);
+                    var cotacoes = resultado.Select(c => $"**{c.Nome}**: {c.Valor.ToString("C")}");
+                    await context.PostAsync($"{string.Join(", ", cotacoes.ToArray())}");
                 }
             }
 
-            await context.PostAsync($"Um minuto que farei uma cotação para as moedas {string.Join(",", moedas.ToArray())}");
-            if (!msgRetorno.Equals(""))
-            {
-                await context.PostAsync(msgRetorno.ToString());
-            }
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////
+            //var client = new System.Net.Http.HttpClient();
+            //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            //var urllink = "http://api.promasters.net.br/cotacao/v1/valores";
+            //var response = await client.GetAsync(urllink);
+            //var JsonResult = response.Content.ReadAsStringAsync().Result;
+            //var js = new DataContractJsonSerializer(typeof(MoedaCotacao));
+            //var ms = new MemoryStream(Encoding.UTF8.GetBytes(JsonResult));
+            //var cotacao = (MoedaCotacao)js.ReadObject(ms);
+
+            //var msgRetorno = new StringBuilder();
+            //var moedas = result.Entities?.Select(e => e.Entity);
+
+            //foreach (string nomeMoeda in moedas)
+            //{
+            //    switch (nomeMoeda.ToLower())
+            //    {
+            //        case "dolar":
+            //        case "dólar":
+            //        case "dollar":
+            //            msgRetorno.AppendLine("A cotação do " + nomeMoeda + " é " + cotacao.valores.USD.valor.ToString("C") + " (" + cotacao.valores.USD.fonte + "). ");
+            //            break;
+            //        case "euro":
+            //            msgRetorno.AppendLine("A cotação do " + nomeMoeda + " é " + cotacao.valores.EUR.valor.ToString("C") + " (" + cotacao.valores.EUR.fonte + "). ");
+            //            break;
+            //        case "bitcoin":
+            //            msgRetorno.AppendLine("A cotação do " + nomeMoeda + " é " + cotacao.valores.BTC.valor.ToString("C") + " (" + cotacao.valores.BTC.fonte + "). ");
+            //            break;
+            //        case "libra":
+            //            msgRetorno.AppendLine("A cotação do " + nomeMoeda + " é " + cotacao.valores.GBP.valor.ToString("C") + " (" + cotacao.valores.GBP.fonte + "). ");
+            //            break;
+            //        case "peso":
+            //            msgRetorno.AppendLine("A cotação do " + nomeMoeda + " argentino é " + cotacao.valores.ARS.valor.ToString("C") + " (" + cotacao.valores.ARS.fonte + "). ");
+            //            break;
+            //    }
+            //}
+
+            //await context.PostAsync($"Um minuto que farei uma cotação para as moedas {string.Join(",", moedas.ToArray())}");
+            //if (!msgRetorno.Equals(""))
+            //{
+            //    await context.PostAsync(msgRetorno.ToString());
+            //}
             /////////////////////////////////////////////////////////////////////////////////////////////////////////
         }
 
