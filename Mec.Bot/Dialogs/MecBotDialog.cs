@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs;
@@ -35,6 +36,38 @@ namespace Mec.Bot.Dialogs
                            "quando será a próxima troca de óleo do seu veículo.";
 
             await context.PostAsync(mensagem);
+
+            var message = context.MakeMessage();
+            var objHeroCard = new HeroCard();
+
+            objHeroCard.Subtitle = "Gostaria de saber se você deseja essa ajuda?";
+
+            objHeroCard.Buttons = new List<CardAction>
+            {
+                new CardAction
+                {
+                    Text = "btnYes",
+                    DisplayText = "Sim",
+                    Type = ActionTypes.PostBack,
+                    Value = "YesAjuda",
+                    Title = "Sim"
+                },
+
+                new CardAction
+                {
+                    Text = "btnNo",
+                    DisplayText = "Não",
+                    Type = ActionTypes.PostBack,
+                    Value = "NoAjuda",
+                    Title = "Não"
+                }
+            };
+
+            message.Attachments = new List<Attachment>();
+            message.Attachments.Add(objHeroCard.ToAttachment());
+
+            await context.PostAsync(message);
+            
         }
 
         //A inteção é um sobre
