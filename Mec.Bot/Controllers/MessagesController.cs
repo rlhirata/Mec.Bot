@@ -28,16 +28,15 @@ namespace Mec.Bot
                 ConfigurationManager.AppSettings["LuisSubscriptionKey"]);
             var service = new LuisService(attributes);
 
-            //Colocar os '...' que está digitando
-            var reply = activity.CreateReply();
-            reply.Type = ActivityTypes.Typing;
-            reply.Text = null;
-            await connector.Conversations.ReplyToActivityAsync(reply);
-
             if (activity.Type == ActivityTypes.Message)
             {
-                //await Conversation.SendAsync(activity, () => new Dialogs.MecBotDialog(service));
-                await Conversation.SendAsync(activity, () => new Dialogs.CotacaoDialog(service));
+                //Colocar os '...' que está digitando
+                var reply = activity.CreateReply();
+                reply.Type = ActivityTypes.Typing;
+                reply.Text = null;
+                await connector.Conversations.ReplyToActivityAsync(reply);
+
+                await Conversation.SendAsync(activity, () => new Dialogs.MecBotDialog(service));
             }
             else
             {

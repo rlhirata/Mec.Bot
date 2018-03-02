@@ -127,15 +127,12 @@
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\MessagesController.cs" />
-    <Compile Include="Dialogs\CotacaoDialog.cs" />
     <Compile Include="Dialogs\MecBotDialog.cs" />
     <Compile Include="Dialogs\RootDialog.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Serialization\Cotacao.cs" />
-    <Compile Include="Serialization\MoedaCotacao.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config">
