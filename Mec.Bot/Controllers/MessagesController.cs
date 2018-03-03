@@ -7,6 +7,7 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Builder.Luis;
 using System;
+using Mec.Bot.Dialogs;
 
 namespace Mec.Bot
 {
@@ -23,10 +24,10 @@ namespace Mec.Bot
             var connector = new ConnectorClient(new Uri(activity.ServiceUrl));
 
             //Configurar o EndPoint no LUIS
-            var attributes = new LuisModelAttribute(
-                ConfigurationManager.AppSettings["LuisId"],
-                ConfigurationManager.AppSettings["LuisSubscriptionKey"]);
-            var service = new LuisService(attributes);
+            //var attributes = new LuisModelAttribute(
+            //    ConfigurationManager.AppSettings["LuisId"],
+            //    ConfigurationManager.AppSettings["LuisSubscriptionKey"]);
+            //var service = new LuisService(attributes);
 
             if (activity.Type == ActivityTypes.Message)
             {
@@ -36,12 +37,29 @@ namespace Mec.Bot
                 reply.Text = null;
                 await connector.Conversations.ReplyToActivityAsync(reply);
 
-                await Conversation.SendAsync(activity, () => new Dialogs.MecBotDialog(service));
+                //await Conversation.SendAsync(activity, () => new Dialogs.MecBotDialog(service));
+                await Conversation.SendAsync(activity, () => new Dialogs.MecBotDialog());
             }
             else
             {
                 HandleSystemMessage(activity);
             }
+
+            //if (activity.Type == ActivityTypes.Message)
+            //{
+            //    //Colocar os '...' que está digitando
+            //    var reply = activity.CreateReply();
+            //    reply.Type = ActivityTypes.Typing;
+            //    reply.Text = null;
+            //    await connector.Conversations.ReplyToActivityAsync(reply);
+
+            //    await Conversation.SendAsync(activity, () => new RootDialog());
+            //}
+            //else
+            //{
+            //    HandleSystemMessage(activity);
+            //}
+
             var response = Request.CreateResponse(HttpStatusCode.OK);
             return response;
         }
