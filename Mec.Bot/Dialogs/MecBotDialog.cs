@@ -150,7 +150,7 @@ namespace Mec.Bot.Dialogs
 
         private async Task SendPerguntaKMProximaTroca(IDialogContext context)
         {
-            await context.PostAsync("\U0001F6E3 Com base na última troca de óleo, com quantos quilômetros está prevista a próxima?");
+            await context.PostAsync("\U0001F6E2 Com base na última troca de óleo, com quantos quilômetros está prevista a próxima?");
 
             context.Wait(this.PerguntaKMProximaTrocaAfter);
         }
@@ -165,7 +165,7 @@ namespace Mec.Bot.Dialogs
 
         private async Task SendPerguntaKMPorSemana(IDialogContext context)
         {
-            await context.PostAsync("\U0001F6E2 Quantos quilômetros seu veículo roda em média por semana?");
+            await context.PostAsync("\U0001F6E3 Quantos quilômetros seu veículo roda em média por semana?");
 
             context.Wait(this.PerguntaKMPorSemanaAfter);
         }
