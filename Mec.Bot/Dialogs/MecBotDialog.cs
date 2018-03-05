@@ -28,6 +28,65 @@ namespace Mec.Bot.Dialogs
             context.Done<object>(null);
         }
 
+        //A inteção é um sobre
+        [LuisIntent("Sobre")]
+        public async Task Sobre(IDialogContext context, LuisResult result)
+        {
+            await context.PostAsync("**(▀̿Ĺ̯▀̿ ̿)** - Eu sou famoso **Bot Inteligentão**\n\nEstou aqui para te ajudar...");
+
+            context.Done<object>(null);
+        }
+
+        //A inteção é um informacoes
+        [LuisIntent("Informacoes")]
+        public async Task Informacoes(IDialogContext context, LuisResult result)
+        {
+            await context.PostAsync("Segue algumas informações sobre o bot:\n\n" +
+                $"Activity.ChannelId: {context.Activity.ChannelId}\n\n" +
+                $"Activity.ConversationId: {context.Activity.Conversation.Id}\n\n" +
+                $"Activity.Id: {context.Activity.Id}\n\n" +
+                $"Activity.From.Id: {context.Activity.From.Id}\n\n" +
+                $"Activity.From.Name: {context.Activity.From.Name}\n\n" +
+                $"Activity.LocalTimestamp: {context.Activity.LocalTimestamp}\n\n" +
+                $"Activity.ServiceUrl: {context.Activity.ServiceUrl}\n\n" +
+                $"Activity.ChannelData: {context.Activity.ChannelData}");
+
+            context.Done<object>(null);
+        }
+
+        //A inteção é um EasterEgg-Rogerio
+        [LuisIntent("EasterEgg")]
+        public async Task EasterEgg(IDialogContext context, LuisResult result)
+        {
+            var criadores = result.Entities?.Select(e => e.Entity);
+            var msgRetorno = "";
+
+            foreach (string nomeCriador in criadores)
+            {
+                switch (nomeCriador.ToLower())
+                {
+                    case "rogerio":
+                    case "rogério":
+                        msgRetorno = msgRetorno + "xiiii.... o **Rogério** é conhecido por ser 4% kkkkkk \U0001F308 \n\n";
+                        break;
+                    case "anderson":
+                        msgRetorno = msgRetorno + "\U0001F648 eita o **Anderson** já tirou foto com a Bel Pesce!!! \n\n";
+                        break;
+                    case "wellington":
+                        msgRetorno = msgRetorno + "\U0001F632 cuidado porque o **Wellington** desta gente muito feliz hahahaha \n\n";
+                        break;
+                    case "danilo":
+                        msgRetorno = msgRetorno + "\U0001F950 vixe o **Danilo** sempre quer dois salgados \U0001F35F \n\n";
+                        break;
+                }
+            }
+
+            msgRetorno = msgRetorno + ":)";
+            await context.PostAsync(msgRetorno);
+
+            context.Done<object>(null);
+        }
+
         //A inteção é um cumprimento
         [LuisIntent("Cumprimento")]
         public async Task Cumprimento(IDialogContext context, LuisResult result)
@@ -43,7 +102,11 @@ namespace Mec.Bot.Dialogs
                            "quando será a próxima troca de óleo do seu veículo.";
 
             await context.PostAsync(mensagem);
-
+            await this.SendPerguntaAjuda(context);
+        }
+        
+        public async Task SendPerguntaAjuda(IDialogContext context)
+        { 
             var message = context.MakeMessage();
             var objHeroCard = new HeroCard();
 
@@ -79,48 +142,6 @@ namespace Mec.Bot.Dialogs
             context.Wait(this.AjudaAfter);
         }
 
-        //A inteção é um sobre
-        [LuisIntent("Sobre")]
-        public async Task Sobre(IDialogContext context, LuisResult result)
-        {
-            await context.PostAsync("**(▀̿Ĺ̯▀̿ ̿)** - Eu sou famoso **Bot Inteligentão**\nEstou aqui para te ajudar...");
-
-            context.Done<object>(null);
-        }
-
-        //A inteção é um EasterEgg-Rogerio
-        [LuisIntent("EasterEgg")]
-        public async Task EasterEgg(IDialogContext context, LuisResult result)
-        {
-            var criadores = result.Entities?.Select(e => e.Entity);
-            var msgRetorno = "";
-
-            foreach (string nomeCriador in criadores)
-            {
-                switch (nomeCriador.ToLower())
-                {
-                    case "rogerio":
-                    case "rogério":
-                        msgRetorno = msgRetorno + "xiiii.... o **Rogério** é conhecido por ser 4% kkkkkk \U0001F308 \n";
-                        break;
-                    case "anderson":
-                        msgRetorno = msgRetorno + "\U0001F648 eita o **Anderson** já tirou foto com a Bel Pesce!!! \n";
-                        break;
-                    case "wellington":
-                        msgRetorno = msgRetorno + "\U0001F632 cuidado porque o **Wellington** desta gente muito feliz hahahaha \n";
-                        break;
-                    case "danilo":
-                        msgRetorno = msgRetorno + "\U0001F950 vixe o **Danilo** sempre quer dois salgados \U0001F35F \n";
-                        break;
-                }
-            }
-
-            msgRetorno = msgRetorno + ":)";
-            await context.PostAsync(msgRetorno);
-
-            context.Done<object>(null);
-        }
-
         private async Task AjudaAfter(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
             var message = await result;
@@ -128,9 +149,16 @@ namespace Mec.Bot.Dialogs
             if (message.Text == "/YesAjuda")
             {
                 await context.PostAsync("\U0001F609 Legal!! Fico feliz que queira uma ajudinha, afinal fui criado justamente para você não se preocupar com isso!");
+                await this.SendPerguntaKMVeiculo(context);
+            } else if (message.Text == "/NoAjuda")
+            {
+                await context.PostAsync("Ok, sem problemas. Então podemos enviar uma mensagem para você quando tivermos outros serviços disponíveis ou promoções de nossos parceiros?");
+                context.Done<object>(null);
+            } else
+            {
+                await context.PostAsync("Desculpe, mas não entendi a sua resposta.");
+                await this.SendPerguntaAjuda(context);
             }
-
-            await this.SendPerguntaKMVeiculo(context);
         }
 
         private async Task SendPerguntaKMVeiculo(IDialogContext context)
