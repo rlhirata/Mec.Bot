@@ -10,6 +10,7 @@ using Microsoft.Bot.Connector;
 
 namespace Mec.Bot.Dialogs
 {
+
     [Serializable]
     public class MecBotDialog : LuisDialog<object>
     {
@@ -172,6 +173,11 @@ namespace Mec.Bot.Dialogs
         {
             var message = await result;
             //tratar o retorno
+
+
+
+            var newIntentName = default(string);
+            var newAction = new LuisActionResolver(action.GetType().Assembly).ResolveActionFromLuisIntent(result, out newIntentName);
 
             await this.SendPerguntaKMProximaTroca(context);
         }
