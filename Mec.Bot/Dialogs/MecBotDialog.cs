@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Luis;
 using Microsoft.Bot.Builder.Luis.Models;
 using Microsoft.Bot.Connector;
+using Newtonsoft.Json;
 
 namespace Mec.Bot.Dialogs
 {
@@ -172,13 +175,28 @@ namespace Mec.Bot.Dialogs
         private async Task PerguntaKMVeiculoAfter(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
             var message = await result;
+            var information = new Serialization.ConversationData();
+
             //tratar o retorno
+            if (!int.TryParse(message.Text, out int kmrodados))
+            {
+                //busca a intenção no LUIS
+                var intentLUIS = await this.ConecatarLUIS(message.Text);
+                var resultado = JsonConvert.DeserializeObject<Serialization.LUISIntent.ResultLUISIntent>(intentLUIS);
 
+                if (resultado.TopScoringIntent.intent != "QuilometragemVeiculo")
+                {
+                    await context.PostAsync("Desculpe, mas não entendi a sua resposta.");
+                    await this.SendPerguntaKMVeiculo(context);
+                    return;
+                }
+                else
+                {
+                    kmrodados = Convert.ToInt32(resultado.entities[0].entity);
+                }
+            }
 
-
-            var newIntentName = default(string);
-            var newAction = new LuisActionResolver(action.GetType().Assembly).ResolveActionFromLuisIntent(result, out newIntentName);
-
+            information.kmrodados = kmrodados;
             await this.SendPerguntaKMProximaTroca(context);
         }
 
@@ -220,5 +238,30 @@ namespace Mec.Bot.Dialogs
 
             context.Done<object>(null);
         }
+
+        private async Task<string> ConecatarLUIS(string mensagem)
+        {
+            var luisAppId = ConfigurationManager.AppSettings["LuisId"];
+            var subscriptionKey = ConfigurationManager.AppSettings["LuisSubscriptionKey"];
+            var luisURL = ConfigurationManager.AppSettings["LuisURL"];
+            var client = new HttpClient();
+            var queryString = HttpUtility.ParseQueryString(string.Empty);
+
+            client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", subscriptionKey);
+
+            queryString["q"] = mensagem;
+
+            // These optional request parameters are set to their default values
+            queryString["timezoneOffset"] = "0";
+            queryString["verbose"] = "false";
+            queryString["spellCheck"] = "false";
+            queryString["staging"] = "false";
+
+            var uri = luisURL + luisAppId + "?" + queryString;
+            var response = await client.GetAsync(uri);
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
     }
 }

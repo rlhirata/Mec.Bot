@@ -41,7 +41,7 @@ namespace Mec.Bot.Dialogs
         {
             await context.PostAsync("Hi, I'm the Basic Multi Dialog bot. Let's get started.");
 
-            context.Call(new IdentificaoDialog(), this.IdentificacaoDialogResumeAfter);
+            //context.Call(new IdentificaoDialog(), this.IdentificacaoDialogResumeAfter);
         }
 
         private async Task IdentificacaoDialogResumeAfter(IDialogContext context, IAwaitable<string> result)
